@@ -1,0 +1,9 @@
+{
+  "author": "Tom Dempsey",
+  "description": "Track projects, milestones and GPT tasks in a dashboard view. Data lives in plain notes with frontmatter \u2014 no lock-in.",
+  "id": "project-milestone-gpt-tracker",
+  "isDesktopOnly": false,
+  "minAppVersion": "1.0.0",
+  "name": "Projects, Milestones & GPT Tasks",
+  "version": "1.6.0"
+}
