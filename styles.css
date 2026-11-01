@@ -595,3 +595,8 @@
   outline: 2px solid var(--interactive-accent);
   outline-offset: 3px;
 }
+
+.pmg-asana-review { max-height: 50vh; overflow-y: auto; }
+.pmg-asana-task { border-top: 1px solid var(--background-modifier-border); padding: 12px 0; }
+.pmg-asana-task pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 160px; overflow-y: auto; }
+.pmg-asana-task button { margin-right: 8px; }

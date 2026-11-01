@@ -1,0 +1,14 @@
+[
+  "src/obsidian-api.js",
+  "src/icon-picker.js",
+  "src/model.js",
+  "src/store.js",
+  "src/board.js",
+  "src/iconize.js",
+  "src/create-modal.js",
+  "src/edit-modals.js",
+  "src/dashboard.js",
+  "src/asana-import.js",
+  "src/plugin.js",
+  "src/settings.js"
+]
