@@ -106,9 +106,14 @@ due: 2026-10-24
 output: https://…    # optional; a URL shows as a link in the GPT tasks table
 ```
 
+The **New GPT task** form includes an optional **Output tag** field. It saves the
+existing `output:` frontmatter property; plain text appears in the Output column
+and URLs appear as links. Leaving it blank omits the property. Edit `output:` in
+the task note to change it later, using the existing note-editing workflow.
+
 ## Development
 
-Source lives in `src/` (TypeScript). `npm install`, then `npm run build` produces the installable bundle in `dist/project-milestone-gpt-tracker/` (main.js, manifest.json, styles.css). Type-check with `npx tsc --noEmit`.
+This checkout contains reconstructed JavaScript source, not recovered original TypeScript. See [RECONSTRUCTION.md](RECONSTRUCTION.md) for provenance and build details. Run `npm ci`, `npm run build`, `npm run check`, and `npm test`. The deterministic build writes `dist/project-milestone-gpt-tracker/`. No TypeScript type check is claimed.
 
 ## Optional Project Momentum
 
@@ -159,3 +164,31 @@ identifiers are saved unchanged; existing emoji and Lucide selections still work
 Pack SVG previews are rebuilt using inert geometry and safe attributes only.
 Iconize manages its own configured pack path and ZIP loading; PMG does not modify
 Iconize settings or pack files. Iconize must be enabled to expose its catalogue.
+
+
+### Import Asana JSON into Milestones
+Use **Import Asana** on the dashboard or the **Import Asana JSON into Milestones**
+command. Choose the destination Project (or No Project) and open-task status.
+The destination is the configured Milestones folder. Completed tasks become Done.
+Choose an Asana JSON file: task arrays, `data` arrays, `tasks` arrays and
+`data.tasks` arrays are supported, along with nested `subtasks` arrays (or
+`subtasks.data`). Files must be under 10 MB and at most 10,000 tasks.
+Review each task's title, ID, owner, date and description. Initially every
+eligible task is pending. Approve/deny individually or use the bulk controls,
+then click **Confirm import** to write only approved tasks. Cancel before
+confirmation makes no changes. Invalid rows are shown with reasons and cannot
+be approved. Files without tasks, invalid JSON, unsafe numeric IDs and invalid
+dates are reported; IDs should be strings in the export.
+
+Each approved task creates a new milestone note with `title`, `project`, `owner`,
+`status`, `due`, `asana_gid` and `asana_url` where available. The description is
+preserved as literal text, including HTML-only descriptions; attachments and
+comments are not fetched. `due_at` uses its exported calendar date, without
+converting time zones. Stable Asana IDs prevent reimports: existing notes are
+skipped, never overwritten, including local edits. Identical IDs within a file
+are eligible only once. Failures are reported per row; retries skip successes.
+The same Asana ID is skipped even when selecting another Project. Filename
+conflicts are reported rather than overwriting any note. No vault notes or
+settings change while choosing a file or reviewing tasks.
+
+Task fields follow [Asana's task reference](https://developers.asana.com/reference/tasks).
