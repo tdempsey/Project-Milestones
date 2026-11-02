@@ -1,0 +1,66 @@
+name: Attest existing release 1.7.0
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  attest:
+    if: github.repository == 'tdempsey/Project-Milestones' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out this workflow's own source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require unchanged release application and build sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code b77015b4ddab40c34814c36f98af8c96e69da5e0 HEAD -- . ':!.github/workflows/attest-release-1.7.0.yml'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run verify
+      - name: Download unchanged published release assets and require exact matches
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/1.7.0" --jq '.object.sha')" = b77015b4ddab40c34814c36f98af8c96e69da5e0
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/1.7.0" > "$RUNNER_TEMP/release.json"
+          node -e 'const fs=require("fs"); const r=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/release.json")); if(r.tag_name!=="1.7.0"||r.draft||r.prerelease||r.assets.length!==3)throw Error("Unexpected release metadata"); if(r.assets.map(a=>a.name).sort().join(",")!=="main.js,manifest.json,styles.css")throw Error("Unexpected assets");'
+          gh release download 1.7.0 --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/release-published" --pattern main.js --pattern manifest.json --pattern styles.css
+          for file in main.js manifest.json styles.css; do
+            cmp "dist/project-milestone-gpt-tracker/$file" "$RUNNER_TEMP/release-published/$file"
+          done
+          cd dist/project-milestone-gpt-tracker
+          sha256sum --check <<'CHECKSUMS'
+          389c1a7a56de0c9a606c1520b03d2199b509f9603dd8d857e6c79c651dd26d00  main.js
+          d8ef1581c68c718877bd248ca72ce7e328ce6224af74339e6b39a5fd1efd21c5  manifest.json
+          840ea81c273b6becf54f3c40a468258e4508b3713a41991f0f81fdd710c38282  styles.css
+          CHECKSUMS
+          node -e 'if(require("./manifest.json").version!=="1.7.0")throw Error("Manifest version mismatch")'
+      - name: Attest this new reproducible CI build
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: |
+            dist/project-milestone-gpt-tracker/main.js
+            dist/project-milestone-gpt-tracker/manifest.json
+            dist/project-milestone-gpt-tracker/styles.css
+          push-to-registry: false
+          create-storage-record: false
+      - name: Explain the provenance boundary
+        shell: bash
+        run: |
+          echo "This attestation describes a new CI rebuild at $GITHUB_SHA, not the original local upload." >> "$GITHUB_STEP_SUMMARY"
+          echo "Application/build sources are unchanged from release source b77015b; all three rebuilt files match the existing published 1.7.0 assets." >> "$GITHUB_STEP_SUMMARY"
