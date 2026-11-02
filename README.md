@@ -1,4 +1,4 @@
-# Projects, Milestones & GPT Tasks — Obsidian plugin
+# Projects Milestones and GPT Tasks
 
 A dashboard for your vault that tracks **projects**, **milestones**, and **GPT tasks** — the Obsidian-native version of the Workroom dashboard. All data lives in plain Markdown notes with frontmatter, in three folders. No database, no lock-in: edit a note's frontmatter and the dashboard updates itself.
 
