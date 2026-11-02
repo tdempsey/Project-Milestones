@@ -230,10 +230,10 @@
   font-weight: 600;
 }
 
-.pmg-empty {
+.pmg-table td.pmg-empty {
   color: var(--text-muted);
   text-align: center;
-  padding: 18px 12px !important;
+  padding: 18px 12px;
 }
 
 .pmg-chip {
