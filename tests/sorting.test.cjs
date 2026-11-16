@@ -57,6 +57,9 @@ function fixture(headers,values) {
   await tick(); assert.deepEqual(f.ids(),[1,0],'saved direction reapplied after filtering/refresh');
   const dates=fixture(['Due'],[['Jan 2, 2027'],['Dec 31, 2026'],['invalid'],['—']]);
   await tick(); dates.click(0); assert.deepEqual(dates.ids(),[1,0,2,3]);
+  const added=fixture(['Added'],[['Jan 2, 2027'],['Dec 31, 2026'],['—']]);
+  await tick(); added.click(0); assert.deepEqual(added.ids(),[1,0,2]);
+  added.click(0); assert.deepEqual(added.ids(),[0,1,2]);
   const empty=fixture(['Owner'],[]); view.emptyRow(empty.body,1,'No results'); await tick(); empty.click(0); assert.equal(empty.body.children.length,1);
   const output=fixture(['Output'],[['Open ↗'],['Open ↗']]);
   output.body.children[0].children[0].dataset.pmgSortValue='https://z.example';

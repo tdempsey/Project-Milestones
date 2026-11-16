@@ -9,7 +9,7 @@ class El {
 const fields=[];
 class Setting {
  constructor(){fields.push(this);} setName(v){this.name=v;return this;}setDesc(){return this;}
- addText(f){this.input={inputEl:new El(),setPlaceholder(){},onChange(f){this.change=f;}};f(this.input);return this;}
+ addText(f){this.input={inputEl:new El(),setPlaceholder(){},setValue(v){this.value=v;},onChange(f){this.change=f;}};f(this.input);return this;}
  addDropdown(f){f({addOption(){},setValue(){},onChange(){}});return this;}
  addButton(f){f({setButtonText(){return this;},setCta(){return this;},onClick(){return this;}});return this;}
 }
@@ -24,18 +24,28 @@ const {CreateItemModal,loadData,DashboardView,DEFAULT_SETTINGS}=context.api;
   const settings={...DEFAULT_SETTINGS};const before=JSON.stringify(settings);
   const modal=new CreateItemModal(app,'gpt-task',settings,[],()=>created++);
   modal.onOpen(); const output=fields.find(f=>f.name==='Output tag');assert.ok(output);
+  const added=fields.find(f=>f.name==='Added');assert.ok(added);
+  const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  assert.equal(added.input.inputEl.type,'date');assert.equal(added.input.value,today);
+  const expectedAdded=raw===''?'':raw==='#summary'?'2026-10-01':today;
+  added.input.change(expectedAdded);
   fields.find(f=>f.name==='Title').input.change('Task');
   output.input.change(raw);await modal.submit();
   assert.equal(created,1);assert.equal(opened.length,1);assert.ok(modal.closed);assert.equal(JSON.stringify(settings),before);
   const text=[...stored.values()][0].text,fm=YAML.parse(text.split('---')[1]);
+  if(expectedAdded)assert.equal(fm.added,expectedAdded);else assert.ok(!Object.hasOwn(fm,'added'));
   if(raw.trim())assert.equal(fm.output,raw.trim());else assert.ok(!Object.hasOwn(fm,'output'));
   // Reopen from persisted note frontmatter using the actual loader.
   const data=loadData(app,settings,new Map());assert.equal(data.gptTasks.length,1);assert.equal(data.gptTasks[0].output,raw.trim());
+  assert.equal(data.gptTasks[0].added,expectedAdded);
   const body=new El(),view=Object.create(DashboardView.prototype);view.plugin={settings};view.sectionHead=()=>{};view.countText=()=>'';view.el=(p,t,c,text)=>p.createEl(t,{cls:c,text});view.table=()=>body;view.projectIconMap=()=>new Map();view.dueCell=tr=>tr.createEl('td');view.editableChip=()=>{};
   view.renderGptTasks(new El(),data,data.gptTasks,1);
   const cell=body.children[0].children[3];assert.equal(cell.dataset.pmgSortValue,raw.trim());
+  const addedCell=body.children[0].children[4];assert.equal(addedCell.dataset.pmgSortValue,expectedAdded);
+  assert.equal(addedCell.text,expectedAdded?(expectedAdded==='2026-10-01'?'Oct 1, 2026':`${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`):'—');
   if(raw.startsWith('https:'))assert.equal(cell.children[0].href,raw);else assert.equal(cell.text,raw.trim()||'—');
  }
  fields.length=0;new CreateItemModal({},'milestone',DEFAULT_SETTINGS,[],()=>{}).onOpen();assert.ok(!fields.some(f=>f.name==='Output tag'));
+ assert.ok(!fields.some(f=>f.name==='Added'));
  console.log('PASS: GPT task form, with/without output tag, YAML escaping, whitespace, URL display, persistence/reopening through loader, optional field scope, unchanged settings.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

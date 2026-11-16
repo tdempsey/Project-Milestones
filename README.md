@@ -227,12 +227,15 @@ GPT task note (in the GPT Tasks folder):
 
 ```yaml
 gpt: Research assistant
+added: 2026-11-16    # defaults to the current local date in the New GPT task form
 project: Customer portal redesign
 status: queued       # queued | in-progress | in-review | done
 due: 2026-10-24
 output: https://…    # optional; a URL shows as a link in the GPT tasks table
 
 ```
+
+The **New GPT task** form includes an **Added** date field, prefilled with the current local date. It saves `added:` in frontmatter and appears in the sortable **Added** column in the GPT tasks section. You can change or clear the date before creating the task. Existing notes without `added:` show an em dash; edit the note's frontmatter to set a date.
 
 The **New GPT task** form includes an optional **Output tag** field. It saves the\
 existing `output:` frontmatter property; plain text appears in the Output column\

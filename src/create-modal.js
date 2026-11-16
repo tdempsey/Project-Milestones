@@ -20,6 +20,7 @@ var CreateItemModal = class extends Modal {
     this.next = "";
     this.waiting = "";
     this.kind = kind;
+    this.added = kind === "gpt-task" ? todayString() : "";
     this.settings = settings;
     this.projectTitles = projectTitles;
     this.onCreated = onCreated;
@@ -74,6 +75,11 @@ var CreateItemModal = class extends Modal {
       renderPreview();
     }
     if (this.kind === "gpt-task") {
+      new Setting(contentEl).setName("Added").addText((t) => {
+        t.inputEl.type = "date";
+        t.setValue(this.added);
+        t.onChange((v) => this.added = v);
+      });
       new Setting(contentEl).setName("GPT").addText((t) => {
         t.setPlaceholder("e.g. Research assistant");
         t.onChange((v) => this.gpt = v);
@@ -149,6 +155,8 @@ var CreateItemModal = class extends Modal {
       n += 1;
     }
     const lines = ["---"];
+    if (this.kind === "gpt-task" && this.added)
+      lines.push(`added: ${this.added}`);
     if (this.kind === "project" && this.code.trim())
       lines.push(`code: ${yamlScalar(this.code.trim())}`);
     if (this.kind === "project" && this.icon.trim())

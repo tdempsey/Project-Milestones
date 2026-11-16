@@ -425,7 +425,7 @@ var DashboardView = class extends ItemView {
       let text = (cell.dataset.pmgSortValue ??
         (cell.querySelector(".pmg-cell-title") || cell).textContent).trim();
       if (!text || text === "—") return null;
-      if (headers[index] === "Due") {
+      if (headers[index] === "Due" || headers[index] === "Added") {
         const date = Date.parse(text);
         return Number.isFinite(date) ? date : null;
       }
@@ -614,13 +614,13 @@ var DashboardView = class extends ItemView {
     var _a;
     const section = this.el(root, "div", "pmg-section");
     this.sectionHead(section, "GPT tasks", this.countText(visible.length, total), "gpt-task", "+ New GPT task");
-    const tbody = this.table(section, ["Task", "GPT", "Project", "Output", "Due", "Status"]);
+    const tbody = this.table(section, ["Task", "GPT", "Project", "Output", "Added", "Due", "Status"]);
     if (data.gptTasks.length === 0) {
-      this.emptyRow(tbody, 6, `No GPT task notes yet in \u201C${this.plugin.settings.gptTasksFolder}\u201D.`);
+      this.emptyRow(tbody, 7, `No GPT task notes yet in \u201C${this.plugin.settings.gptTasksFolder}\u201D.`);
       return;
     }
     if (visible.length === 0) {
-      this.emptyRow(tbody, 6, "No GPT tasks match the current search/filter.");
+      this.emptyRow(tbody, 7, "No GPT tasks match the current search/filter.");
       return;
     }
     const icons = this.projectIconMap(data);
@@ -654,6 +654,8 @@ var DashboardView = class extends ItemView {
       } else {
         outTd.setText(t.output);
       }
+      const addedTd = tr.createEl("td", { text: prettyDate(t.added) });
+      addedTd.dataset.pmgSortValue = t.added || "";
       this.dueCell(tr, t);
       const statusTd = tr.createEl("td");
       this.editableChip(statusTd, labelOf(GPT_TASK_STATUSES, t.status), gptChip(t.status, t.overdue), GPT_TASK_STATUSES, t.status, t.file);

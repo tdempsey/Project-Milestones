@@ -54,6 +54,7 @@ function loadData(app, settings, iconizeByPath) {
         projectLinked: false,
         // resolved after all projects are known
         output: fmString(fm, "output"),
+        added: fmDate(fm, "added"),
         status,
         due,
         overdue: isOverdue(due, status === "done")
